@@ -1,0 +1,106 @@
+%_______________________________________________
+%                           texarray.tex
+%
+%Макросы для работы с массивами
+%
+%_______________________________________________
+%Данный набор макросов предназначен для создания массивов из текстовых блоков и чисел
+%
+%_______________________________________________
+%
+% Автор: Цымай Дмитрий
+% email: dmitry-zy@yandex.ru
+% Дата создания: 01.02.2012
+%
+%_______________________________________________
+%
+%Переменные
+
+%Регистр токенов для промежуточной информации
+\newtoks{\tempitema}
+\newtoks{\tempitemb}
+\newtoks{\tempitemc}
+%Вспомогательный счетчик
+\newcounter{temparraycount}
+\newcounter{temparraycounta}
+%
+%
+%Основные операции
+%
+%Определение нового массива с именем определяемым параметром #1
+\def\newArray#1{
+%#1 Имя нового массива
+%Счетчик элементов массива
+\newcounter{arraycount#1}
+\setcounter{arraycount#1}{1}
+}
+%
+%Результатом каждого вызова макроса \AddItem является 
+%добавление в массив с именем указанным в параметре #1 элемента указанного в параметре #2
+\long\def\AddItem#1#2{%
+%Определяем команду \array#1i
+\expandafter\gdef\csname array#1\roman{arraycount#1}\endcsname{#2}
+%Увеличивается счетчик arraycount#1 на 1
+\global\addtocounter{arraycount#1}{1}
+}
+%
+%Макрос, позволяющий получить элемент из массива с именем указанном
+%в параметре #1 с номером указанном в параметре #2
+\long\def\GetItem#1#2{%
+\setcounter{temparraycount}{#2}
+%Задается макроопределение для вопроса с номером #1
+%Вызывается команда \array#1i
+%при условии, что номер не превышает количества вопросов
+\ifnum\arabic{temparraycount}<\arabic{arraycount#1}
+%вызываем команду для соответствующего элемента
+\csname array#1\roman{temparraycount}\endcsname
+\fi
+}
+%
+%Макрос для получения количества элементов массива
+%В параметре #1 указывается имя уже определенного командой \newArray массива
+\def\ArrayCount#1{
+\setcounter{temparraycount}{\arabic{arraycount#1}}
+\global\addtocounter{temparraycount}{-1}
+\arabic{temparraycount}
+\global\addtocounter{temparraycount}{1}
+}
+%
+%Команда для вывода списка всех элементов массива по порядку
+%К каждому элементу массива может быть применена команда
+%указанная в параметре #2
+\long\def\foreachArray#1#2{%
+%Устанавливаем счетчик цикла массива в 1
+\setcounter{temparraycount}{1}
+%Цикл по элементам массива
+\loop\ifnum\arabic{temparraycount}<\arabic{arraycount#1}
+#2{\GetItem{#1}{\arabic{temparraycount}}}
+%Увеличиваем счетчик
+\global\addtocounter{temparraycount}{1}
+\repeat
+}
+%
+%Команда для вывода списка всех элементов массива по порядку
+%К каждому элементу массива может быть применена команда
+%указанная в параметре #4
+\long\def\ForFromToArray#1#2#3#4{%
+%Устанавливаем счетчики цикла массива
+%Начальное значение
+\setcounter{temparraycount}{#2}
+\setcounter{temparraycounta}{#3}
+%Конечное значение
+\ifnum\arabic{temparraycounta}<\arabic{arraycount#1}
+\addtocounter{temparraycounta}{1}
+\else
+\setcounter{temparraycounta}{\arabic{arraycount#1}}
+\fi
+%Цикл по элементам массива
+\loop\ifnum\arabic{temparraycount}<\arabic{temparraycounta}
+#4{\GetItem{#1}{\arabic{temparraycount}}}
+%Увеличиваем счетчик
+\global\addtocounter{temparraycount}{1}
+\repeat
+}
+%
+%
+%

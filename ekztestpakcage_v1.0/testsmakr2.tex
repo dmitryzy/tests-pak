@@ -1,0 +1,548 @@
+%_______________________________________________
+%                           testmakr2.tex
+%
+%Макросы для создания тестовых заданий и контрольных работ
+%
+%_______________________________________________
+%Данный набор макросов предназначен для создания тестовых заданий,
+%экзаменационных билетов и вариантов контрольных работ,
+%включающих задачи из нескольких разделов
+%например экзаменационных билетов или тестов. 
+%
+%Возможно создавать вопросы с вариантами ответов или без них
+%
+%_______________________________________________
+%
+% Автор: Цымай Дмитрий
+% email: dmitry-zy@yandex.ru
+% Дата создания: 01.09.2012
+%
+%_______________________________________________
+%
+%Переменные
+%Вспомогательные счетчики
+\newcounter{tempSectionNumber}
+\setcounter{tempSectionNumber}{1}
+%
+\newcounter{tempItemNumber}
+\setcounter{tempItemNumber}{1}
+%
+\newcounter{tempItemNumberA}
+\setcounter{tempItemNumberA}{1}
+%
+\newcounter{tempItemNumberB}
+\setcounter{tempItemNumberB}{1}
+%
+\newcounter{tempItemNumberC}
+\setcounter{tempItemNumberC}{1}
+%
+\newcounter{tempItemNumberD}
+\setcounter{tempItemNumberD}{1}
+%
+%
+%Счетчик номер вариантов устанавливается в 1
+\newcounter{VariantNumber}
+\setcounter{VariantNumber}{1}
+%Счетчик количество вариантов
+\newcounter{VariantCount}
+\setcounter{VariantCount}{1}
+%
+%
+%Счетчик групп вопросов устанавливается в 1
+\newcounter{SectionNumber}
+\setcounter{SectionNumber}{1}
+%
+%Счетчик задач в текущей группе вопросов устанавливается в 1
+\newcounter{ItemNumber}
+\setcounter{ItemNumber}{1}
+%
+%
+% Счетчик задач во всех группах вопросов устанавливается в 1
+\newcounter{ItemCount}
+\setcounter{ItemCount}{1}
+%
+%
+%Счетчик смещения номеров в задании устанавливается в 1
+\newcounter{PersonalKey}
+\setcounter{PersonalKey}{1}
+%Счетчик указатель начального номера 1-го задания устанавливается в 1
+\newcounter{BeginKey}
+\setcounter{BeginKey}{1}
+%
+%Счетчик номер билета устанавливается в 1
+\newcounter{BiletNumber}
+\setcounter{BiletNumber}{1}
+%Счетчик для вопросов устанавливается в 1
+\newcounter{VoprosNumber}
+\setcounter{VoprosNumber}{1}
+%Счетчик вариантов ответов устанавливается в 1
+\newcounter{VarOtvNumber}
+\setcounter{VarOtvNumber}{1}
+%
+%Объявляем массив для вопросов
+%\newArray{qvery}
+%
+%
+%
+%Параметры, отвечающие за представление
+%------------------------------------------------
+%Значение этого параметра определяет, что печатается:
+%printotv=0 комплект билетов и вопросов (по умолчанию), 
+%printotv=1 шаблон с правильными ответами
+\newcount\printotv
+\printotv=0
+%
+%Значение этого параметра определяет, что печатается:
+%\prnsimple=0 печатать с заголовками (по умолчанию), 
+%\prnsimple=1 печатать без заголовков
+\newcount\prnsimple
+\prnsimple=0
+%
+%Маркер правильных ответов
+\def\trueotv{\ifnum\printotv=1$\bullet $\ \fi}
+%
+%
+%
+%Макросы, устанавливающие значения параметров представления
+%--------------------------------------------------
+%печатать без заголовков
+\def\printsimple{\prnsimple=1}
+%печатать с заголовками
+\def\printall{\prnsimple=0}
+%Команда помечать правильные ответы при печати
+\def\setprinttrueotv{\printotv=1}
+%Команда не помечать правильные ответы при печати
+\def\setnoprinttrueotv{\printotv=0}
+%
+%
+%
+%Макросы для работы с двумерным массивом
+%----------------------------------------------------
+%Создание массивов с вопросами
+%Результатом каждого вызова макроса \AddItem является 
+%добавление в ячейку массива с параметрами:
+%строка: SectionNumber, столбец: ItemNumber
+% элемента указанного в параметре #1
+\long\gdef\AddItem#1{%
+%Определяем команду \group<SectionNumber>task<ItemNumber>
+\expandafter\gdef\csname group\roman{SectionNumber}task\roman{ItemNumber}\endcsname{#1}
+%Увеличивается счетчик ItemNumber на 1
+\global\addtocounter{ItemNumber}{1}
+\global\addtocounter{ItemCount}{1}
+}
+%
+%
+%Макрос, позволяющий получить элемент массива с параметрами:
+%строка: #1 (номер группы вопросов), столбец: #2 (номер вопроса в группе)
+\long\def\GetItem#1#2{%
+\setcounter{tempSectionNumber}{#1}
+\setcounter{tempItemNumber}{#2}
+\setcounter{VarOtvNumber}{1}
+%Задается макроопределение для вопроса с номером #1
+%Вызывается команда  \group<SectionNumber>task<ItemNumber>
+%при условии, что номер вопроса (ItemNumber) не превышает количества вопросов в данной группе (MaxSection<tempSectionNumber>)
+\ifnum\arabic{tempSectionNumber}<\arabic{SectionNumber}
+\ifnum\arabic{tempItemNumber}<\arabic{MaxSection\roman{tempSectionNumber}}
+%вызываем команду для соответствующего элемента
+\csname group\roman{tempSectionNumber}task\roman{tempItemNumber}\endcsname
+\fi
+\fi
+}
+%
+%
+%Команда для обозначения вопроса
+%Результатом каждого вызова макроса \Qvery является запись нового вопроса в массив
+\long\def\Qvery #1\endQvery{%
+%Параметр команды #1 ограничивается командой \endQvery
+%т.е. текст после \Qvery до \endQvery воспринимается макросом как параметр
+\AddItem{#1}
+}
+%
+%
+%
+%Макросы для компоновки вопросов
+%--------------------------------------------------------------
+%Добавление в группу SectionNumber
+%вопросов содержащихся в файле #1
+\long\def\AddNewSectionFile#1{%
+%Устанавливаем номер вопросов в текущей группе равным 1
+\setcounter{ItemNumber}{1}
+\input{#1}%
+%
+%Запоминаем максимальный номер задания в группе SectionNumber
+\newcounter{MaxSection\roman{SectionNumber}}
+\setcounter{MaxSection\roman{SectionNumber}}{\arabic{ItemNumber}}
+%\global\addtocounter{MaxSection\roman{SectionNumber}}{-1}
+%Увеличиваем счетчик групп вопросов на 1
+\global\addtocounter{SectionNumber}{1}%
+}
+%
+%
+%Объявление новой группы вопросов SectionNumber
+%Все вопросы добавленные после этой команды при помощи команд \Qvery #1\endQvery
+%будут добавляться в новую группу вропросов
+\long\def\AddNewSection{%
+%Устанавливаем номер вопросов в текущей группе равным 1
+\setcounter{ItemNumber}{1}
+%
+%Запоминаем максимальный номер задания в группе SectionNumber
+\newcounter{MaxSection\roman{SectionNumber}}
+\setcounter{MaxSection\roman{SectionNumber}}{\arabic{ItemNumber}}
+%Увеличиваем счетчик групп вопросов на 1
+\global\addtocounter{SectionNumber}{1}%
+}
+%
+%
+%Команда, позволяющая получить вопрос #2 из группы вопросов #1
+\long\def\printQSection#1#2{%
+\setcounter{VarOtvNumber}{1}
+%Печатается вопрос
+\par\noindent\arabic{VoprosNumber}. %
+\GetItem{#1}{#2}
+\addtocounter{VoprosNumber}{1}%
+}
+%Команда, позволяющая получить с номером #1 от начала общего списка вопросов
+\long\def\printQ#1{%
+\setcounter{VarOtvNumber}{1}
+\setcounter{tempItemNumberA}{#1}
+%Проверка
+\ifnum\arabic{tempItemNumberA}>\arabic{ItemCount}
+\setcounter{tempItemNumberA}{\arabic{ItemCount}}
+\global\addtocounter{tempItemNumberA}{-1}
+\fi
+%Определяем номер группы вопросов
+\setcounter{tempSectionNumber}{1}
+\setcounter{tempItemNumberB}{\arabic{MaxSection\roman{tempSectionNumber}}}
+\loop\ifnum\arabic{tempItemNumberA}>\arabic{tempItemNumberB}
+\global\addtocounter{tempSectionNumber}{1}
+\global\addtocounter{tempItemNumberB}{\arabic{MaxSection\roman{tempSectionNumber}}}
+\global\addtocounter{tempItemNumberB}{-1}
+\repeat
+\global\addtocounter{tempItemNumberB}{-1}
+%Определяем номер вопроса в группе
+\global\addtocounter{tempItemNumberB}{-\arabic{MaxSection\roman{tempSectionNumber}}}
+\setcounter{tempItemNumber}{\arabic{tempItemNumberA}}
+\global\addtocounter{tempItemNumber}{-\arabic{tempItemNumberB}}
+\global\addtocounter{tempItemNumber}{-1}
+%Печатается вопрос
+\par\noindent\arabic{VoprosNumber}. %
+\GetItem{\arabic{tempSectionNumber}}{\arabic{tempItemNumber}}
+\addtocounter{VoprosNumber}{1}%
+}
+%
+%
+%Команда для варианта ответа
+\long\def\VarQveryOtv{%
+\par\indent\ \ \arabic{VarOtvNumber}) %
+%
+\addtocounter{VarOtvNumber}{1}%
+}
+%
+%
+%Команда для вывода списка всех вопросов варианта  #1 по порядку
+%К каждой группе элементов может быть применена команда #2
+\long\def\ForEachVariant#1#2{%
+%Устанавливаем счетчик цикла массива в 1
+\setcounter{tempSectionNumber}{1}
+\setcounter{tempItemNumberA}{#1}
+\global\addtocounter{tempItemNumberA}{\arabic{BeginKey}}
+\global\addtocounter{tempItemNumberA}{-1}
+%Цикл по элементам массива
+\loop\ifnum\arabic{tempSectionNumber}<\arabic{SectionNumber} 
+\setcounter{tempItemNumberB}{\arabic{tempItemNumberA}}
+\setcounter{tempItemNumberC}{\arabic{tempItemNumberA}}
+\ifnum\arabic{tempItemNumberA}>\arabic{MaxSection\roman{tempSectionNumber}}
+\global\addtocounter{tempItemNumberB}{-1}
+\global\divide\value{tempItemNumberB}by\value{MaxSection\roman{tempSectionNumber}}
+\global\multiply\value{tempItemNumberB}by\value{MaxSection\roman{tempSectionNumber}}
+\global\addtocounter{tempItemNumberC}{-\arabic{tempItemNumberB}}
+\fi
+\ifnum\arabic{tempItemNumberC}=\arabic{MaxSection\roman{tempSectionNumber}}
+\global\addtocounter{tempItemNumberC}{-1}
+\fi
+#2{\GetItem{\arabic{tempSectionNumber}}{\arabic{tempItemNumberC}}}
+%Увеличиваем счетчик
+\global\addtocounter{tempSectionNumber}{1}
+\global\addtocounter{tempItemNumberA}{\arabic{PersonalKey}}
+\repeat
+}
+%
+%
+%Команда для вывода списка всех вариантов контрольной по порядку
+%Количество вариантов задается параметром #1
+%К каждому элементу массива может быть применена команда указанная в параметре #2
+%К каждой группе элементов может быть применена команда #3 (Например заголовок варианта)
+\long\def\ForEachAll#1#2#3{%
+%Устанавливаем счетчик цикла массива в 1
+\setcounter{VariantNumber}{1}
+\setcounter{VariantCount}{#1}
+\global\addtocounter{VariantCount}{1}
+%Цикл по элементам массива
+\loop\ifnum\arabic{VariantNumber}<\arabic{VariantCount}
+#3
+\begin{enumerate}
+#2{\ForEachVariant{\arabic{VariantNumber}}{\item}}
+\end{enumerate}
+\newpage
+%Увеличиваем счетчик
+\global\addtocounter{VariantNumber}{1}
+\repeat
+}
+%
+%
+%Команда для вывода списка всех вопросов группы  #1 по порядку
+%К каждой группе элементов может быть применена команда #2
+\long\def\ForEachSection#1#2{%
+%Устанавливаем счетчик цикла массива в 1
+\setcounter{tempSectionNumber}{#1}
+\setcounter{tempItemNumberA}{1}
+%Цикл по элементам массива
+\loop\ifnum\arabic{tempItemNumberA}<\arabic{MaxSection\roman{tempSectionNumber}}
+#2{\GetItem{\arabic{tempSectionNumber}}{\arabic{tempItemNumberA}}}
+%Увеличиваем счетчик
+\global\addtocounter{tempItemNumberA}{1}
+\repeat
+}
+%
+%Установка значения варианта равным #1
+\def\ResetVariant#1{\setcounter{VariantNumber}{#1}}
+%
+%
+%Команда для вывода списка всех вопросов из всех групп по порядку
+\def\makelistqvery{%
+\begin{ListQvery}
+\setcounter{VoprosNumber}{1}
+%Цикл по элементам массива
+%Устанавливаем счетчик цикла массива в 1
+\setcounter{tempSectionNumber}{1}
+\loop\ifnum\arabic{tempSectionNumber}<\arabic{SectionNumber}
+\ForEachSection{\arabic{tempSectionNumber}}{\par\noindent\arabic{VoprosNumber}. \addtocounter{VoprosNumber}{1}}
+%Увеличиваем счетчик
+\global\addtocounter{tempSectionNumber}{1}
+\repeat
+\end{ListQvery}
+}
+%
+%
+%__________________________________
+%Шаблоны
+%Определения строк шаблона
+%Утверждаю
+\def\templateutv#1{\edef\ltemplateutv{#1}}
+%Предмет
+\def\templatepredm#1{\edef\ltemplatepredm{#1}}
+%Специальность
+\def\templatespez#1{\edef\ltemplatespez{#1}}
+%Зав каф
+\def\templatezavkaf#1{\edef\ltemplatezavkaf{#1}}
+%Составил
+\def\templatesost#1{\edef\ltemplatesost{#1}}
+%Кафедра
+\def\templatekafedra#1{\edef\ltemplatekafedra{#1}}
+%Вариант
+\def\templatevar#1{\edef\ltemplatevar{#1}}
+%
+%Инициализация строк шаблона
+%(может быть произведена заново в документе)
+\templateutv{УТВЕРЖДАЮ}
+\templatepredm{Предмет}
+\templatespez{Специальность}
+\templatezavkaf{Зав.кафедрой}
+\templatesost{Составил}
+\templatekafedra{Кафедра}
+\templatevar{Вариант}
+%
+%
+%
+%Определения переменных шаблона
+%Название кафедры
+\def\kafedra#1{\edef\lkafedra{#1}}
+%Зав кафедрой
+\def\zavkaf#1{\edef\lzavkaf{#1}}
+%Дата утверждения билетов
+\def\datautv#1{\edef\ldatautv{#1}}
+%Название ВУЗа
+\def\vuz#1{\edef\lvuz{#1}}
+%Заголовок билета
+\def\bilettitle#1{\edef\lbilettitle{#1}}
+%Составитель билетов
+\def\biletauthor#1{\edef\lbiletauthor{#1}}
+%Предмет
+\def\predmet#1{\edef\lpredmet{#1}}
+%Специальность
+\def\spez#1{\edef\lspez{#1}}
+%
+%Инициализация переменных шаблона
+%(может быть произведена заново в документе)
+\kafedra{<Название кафедры>}
+\zavkaf{<Фамилия И.О.>}
+\datautv{<чч.мv.гг>}
+\vuz{<Название ВУЗа>}
+\bilettitle{<Заголовок билета>}
+\biletauthor{<Фамилия И.О.>}
+\predmet{<Название предмета>}
+\spez{<Специальности>}
+%
+%
+%
+%_____________________________________
+%Команды и окружения
+%
+%Команда для заголовка контрольной
+\long\gdef\ControlHeader{%
+\setcounter{VoprosNumber}{1}%
+\begin{center}
+\textbf{\lvuz}\\
+\textbf{\ltemplatekafedra : \lkafedra}\\
+\ltemplatepredm : \lpredmet\\
+\ltemplatespez : \lspez\\
+{\large \textbf{\lbilettitle}}\\
+\ltemplatevar \No  \arabic{VariantNumber}
+\end{center}
+}
+%
+%Команда для заголовка билета
+\newcommand{\BiletHeader}{%
+\ifnum\prnsimple=0
+\nopagebreak \par 
+\noindent\textbf{\ltemplateutv} 
+\vspace{0.4cm}\nopagebreak 
+\par
+\ \ltemplatezavkaf <<\lkafedra >>
+\par%
+\rule[-1pt]{2 cm}{0.4pt} \lzavkaf  
+\vspace{0.2cm}\nopagebreak 
+\par
+\ \ltemplatepredm : <<\lpredmet >>\nopagebreak \par
+\ \ltemplatespez : \lspez\nopagebreak  \par 
+\ldatautv   
+\vspace{0.1cm}\nopagebreak \par 
+\begin{center}
+\textbf{\lvuz}\nopagebreak  
+\end{center}
+\fi
+\begin{center}
+%Выводим номер билета арабскими цифрами
+\textbf{\lbilettitle  \No  \arabic{BiletNumber}}\nopagebreak 
+\vspace{0.2cm}\nopagebreak 
+%Увеличиваем счетчик номера билета на единицу
+\addtocounter{BiletNumber}{1}
+%Устанавливаем счетчик номеров вопросов в 1
+\setcounter{VoprosNumber}{1}
+\nopagebreak 
+\end{center}
+}
+%
+%Команда для нижней части билета
+\newcommand{\BiletFooter}{%
+\ifnum\prnsimple=0
+\vspace{0.4cm}\nopagebreak \par 
+\noindent\ltemplatesost \rule[-1pt]{1.5cm}{0.4pt} \lbiletauthor \nopagebreak 
+\vspace{0.1cm}  
+\fi
+\par
+}
+%
+%Окружение для билета
+\newenvironment{EkzBilet}{\BiletHeader}{\BiletFooter }
+%
+%Окружение для списка вопросов
+\newenvironment{ListQvery}{%
+\par\noindent\textbf{\ltemplateutv}
+\vspace{0.4cm}
+\\
+\ \ltemplatezavkaf <<\lkafedra >> \rule[-1pt]{3cm}{0.4pt} \lzavkaf  
+\vspace{0.2cm}
+\\
+\begin{center}
+\textbf{Список вопросов по курсу  <<\lpredmet >>}\\
+для специальности \lspez 
+\end{center}
+\setcounter{VoprosNumber}{1}
+}
+{%
+\BiletFooter 
+}
+%
+%
+%_______________________________________________
+%Команды для компоновки тестов
+%
+%Определить билет с указанными номерами вопросов
+%определяемых в параметре #1
+%Номера вопросов разделяются командой \and
+\long\def\printbilet #1{
+\let\and=\printQ %
+\begin{EkzBilet}
+\printQ #1
+\end{EkzBilet}
+}
+%Компоновать таблицей
+%2 билета в блоке 
+%Вопросы в 1-м билете (#1) 
+%Вопросы во 2-м билете (#2) 
+%
+\long\def\twotestblok#1#2{
+\begin{tabular}{p{0.9\linewidth}}
+\hline \\ \printbilet{#1}\\ \hline \\ \printbilet{#2} \\ \hline %
+\end{tabular}
+}
+%
+%4 билета в блоке 
+%Вопросы в 1-м билете (#1) 
+%Вопросы во 2-м билете (#2) 
+%Вопросы во 3-м билете (#3) 
+%Вопросы во 4-м билете (#4) 
+%
+\long\def\fiertestblok#1#2#3#4{
+\small
+\begin{tabular}{p{0.45\linewidth}|p{0.45\linewidth}}
+\hline \\ \printbilet{#1} & \printbilet{#2} \\ \hline \\ %
+\printbilet{#3} & \printbilet{#4} \\ \hline
+\end{tabular}
+}
+%
+%_______________________________________________
+%Команды для компоновки контрольных
+%Команда для создания комплекта контрольных работ по шаблону \ControlHeader
+%Каждый вариант с новой страницы
+%
+%Ключ для перемешивания заданий в вариантах (например для подготовки нескольких разных комплектов заданий). 
+%Задает номер начальной задачи для 1-го раздела для 1-го варианта #2 и последующее смещение #3
+%Количество генерируемых вариантов заданий задается параметром #1
+\long\def\printkontrol#1#2#3{
+%Номер начальной задачи для 1-го раздела #1
+\setcounter{BeginKey}{#2}
+%Смещение #2
+\setcounter{PersonalKey}{#3}
+%Генерируем варианты
+\ForEachAll{#1}{}{\ControlHeader}
+}
+%
+%Команда для распечатки варианта #1 контрольной работы по шаблону
+%Ключ для создания вариантов. 
+%Задает номер начальной задачи для 1-го раздела для 1-го варианта #2 и последующее смещение #3
+\long\def\printvariant#1#2#3{
+%
+\setcounter{VariantNumber}{#1}
+%Номер начальной задачи для 1-го раздела #1
+\setcounter{BeginKey}{#2}
+%Смещение #2
+\setcounter{PersonalKey}{#3}
+%Генерируем вариант
+\ControlHeader
+\begin{enumerate}
+\ForEachVariant{\arabic{VariantNumber}}{\item}
+\end{enumerate}
+}
+%
+%Команда для распечатки всей группы вопросов #1 с заданным заголовком #2
+%Коментарий #3
+\long\def\printsection#1#2#3{
+\section*{#2}
+#3
+\begin{enumerate}
+\ForEachSection{#1}{\item}
+\end{enumerate}
+}
+%

@@ -1,0 +1,62 @@
+%Пример выполнения команд из файла testsmakr2.tex
+%Заголовки
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage[T2A]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+%
+%Параметры титульного листа
+\author{Фамилия И.О.}
+\title{Тесты}
+%
+%Подключаем пакет testsmakr2.tex находящийся в каталоге ./pakage
+\input{./pakage/testsmakr2}
+%
+%Параметры контрольных заданий
+\kafedra{Кафедра}
+\vuz{Университет}
+\bilettitle{Билет}
+\predmet{Предмет}
+\spez{спец.}
+%
+%Начало документа
+\begin{document}
+%Титульный лист
+\maketitle
+\newpage
+%Добавить блок заданий для контрольной из файла r1.tex
+%находящегося в директории ./kontrol/
+%Каждый блок заданий относящийся к определенной теме находится в отдельном файле
+\AddNewSectionFile{./kontrol/r1}
+\AddNewSectionFile{./kontrol/r2}
+\AddNewSectionFile{./kontrol/r3}
+\AddNewSectionFile{./kontrol/r4}
+%
+%Сгенерировать варианты контрольной работы
+%Первый номер первого варианта равен 1
+%Второй номер первого варианта равен 1+2=3
+%и т.д.
+%Всего 4 варианта
+\printkontrol{4}{1}{2}
+%
+%Сгенерировать  3-й вариант для предыдущей контрольной
+%(Параметры 1 и 2 совпадают)
+\printvariant{3}{1}{2}
+%
+\newpage
+Распечатать вопросы первого блока, заданного файлом r1.tex\\
+\printsection{1}{Список вопросов}{Комментарий}
+%
+Распечатать 2-й вопрос из 1-й группы вопросов\\
+\printQSection{2}{1}
+%
+Распечатать 1-й вопрос из общего списка вопросов всех групп 
+(все вопросы объединяются в единый список в порядке добавления)\\
+\printQ{1}
+%
+\end{document}
